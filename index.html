@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple WebRTC Chat</title>
+    <style>
+        #localVideo, #remoteVideo {
+            width: 320px;
+            height: 240px;
+            margin: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple WebRTC Chat</h1>
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <script>
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(function (stream) {
+                var localVideo = document.getElementById('localVideo');
+                localVideo.srcObject = stream;
+
+                var configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+                var peerConnection = new RTCPeerConnection(configuration);
+
+                // Add the local stream to the connection
+                stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
+                // Handle incoming ice candidates
+                peerConnection.onicecandidate = function (event) {
+                    if (event.candidate) {
+                        // Send the candidate to the other peer
+                    }
+                };
+
+                // Handle the creation of the remote stream
+                peerConnection.ontrack = function (event) {
+                    var remoteVideo = document.getElementById('remoteVideo');
+                    remoteVideo.srcObject = event.streams[0];
+                };
+
+                // Create an offer to establish connection
+                peerConnection.createOffer()
+                    .then(function (offer) {
+                        return peerConnection.setLocalDescription(offer);
+                    })
+                    .then(function () {
+                        // Send the offer to the other peer
+                    })
+                    .catch(function (error) {
+                        console.error('Error creating offer:', error);
+                    });
+            })
+            .catch(function (error) {
+                console.error('Error accessing media devices:', error);
+            });
+    </script>
+</body>
+</html>
